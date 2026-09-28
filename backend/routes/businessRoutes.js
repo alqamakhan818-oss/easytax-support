@@ -2,14 +2,20 @@ const express = require('express');
 const router = express.Router();
 const {
   getBusiness,
+  createBusiness,
   updateBusiness,
   resetDemoData,
 } = require('../controllers/businessController');
+const { requireBusinessContext } = require('../middleware/businessContext');
 
+// POST /api/business creates a new workspace (does not require an existing ID)
+router.post('/', createBusiness);
+
+// Protected routes require valid X-Business-Id
 router.route('/')
-  .get(getBusiness)
-  .put(updateBusiness);
+  .get(requireBusinessContext, getBusiness)
+  .put(requireBusinessContext, updateBusiness);
 
-router.post('/reset', resetDemoData);
+router.post('/reset', requireBusinessContext, resetDemoData);
 
 module.exports = router;

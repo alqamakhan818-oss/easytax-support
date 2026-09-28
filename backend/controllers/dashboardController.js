@@ -4,17 +4,19 @@ const Checklist = require('../models/Checklist');
 const DocumentStatus = require('../models/DocumentStatus');
 const { defaultChecklistItems } = require('../utils/seedData');
 
-// GET /api/dashboard
+// GET /api/dashboard - Get dashboard summary for current business workspace
 const getDashboardSummary = async (req, res, next) => {
   try {
-    const business = (await Business.findOne()) || {
-      name: 'My Small Business',
-      ownerName: 'Business Owner',
-      businessType: 'Retail',
-    };
+    const business = await Business.findById(req.businessId);
+    if (!business) {
+      return res.status(404).json({
+        success: false,
+        message: 'Business workspace not found',
+      });
+    }
 
-    // Calculate income and expense aggregates
-    const transactions = await Transaction.find().sort({ date: -1 });
+    // Calculate income and expense aggregates strictly for this business
+    const transactions = await Transaction.find({ businessId: req.businessId }).sort({ date: -1 });
 
     let totalIncome = 0;
     let totalExpenses = 0;
@@ -63,8 +65,8 @@ const getDashboardSummary = async (req, res, next) => {
       monthlyData.push({ month: 'Current Period', income: 0, expenses: 0, net: 0 });
     }
 
-    // Documents status
-    const docDoc = await DocumentStatus.findOne();
+    // Documents status strictly for this business
+    const docDoc = await DocumentStatus.findOne({ businessId: req.businessId });
     const docList = docDoc && docDoc.documents ? docDoc.documents : [];
     const totalDocs = docList.length;
     const availableDocs = docList.filter((d) => d.status === 'Available').length;
@@ -74,8 +76,8 @@ const getDashboardSummary = async (req, res, next) => {
       percentage: totalDocs > 0 ? Math.round((availableDocs / totalDocs) * 100) : 0,
     };
 
-    // Checklist progress
-    const checklistDoc = await Checklist.findOne();
+    // Checklist progress strictly for this business
+    const checklistDoc = await Checklist.findOne({ businessId: req.businessId });
     const completedItems = checklistDoc && checklistDoc.completedItems ? checklistDoc.completedItems : [];
     const totalChecklist = defaultChecklistItems.length;
     const completedCount = completedItems.length;
@@ -85,7 +87,7 @@ const getDashboardSummary = async (req, res, next) => {
       percentage: totalChecklist > 0 ? Math.round((completedCount / totalChecklist) * 100) : 0,
     };
 
-    // Recent 5 transactions
+    // Recent 5 transactions for this business
     const recentTransactions = transactions.slice(0, 5);
 
     return res.status(200).json({

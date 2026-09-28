@@ -1,5 +1,4 @@
 const Transaction = require('../models/Transaction');
-const Business = require('../models/Business');
 
 const INCOME_CATEGORIES = [
   'Product Sales',
@@ -23,12 +22,12 @@ const EXPENSE_CATEGORIES = [
   'Other Expenses',
 ];
 
-// GET /api/transactions
+// GET /api/transactions - Get transactions for current business workspace
 const getTransactions = async (req, res, next) => {
   try {
     const { type, category, sort, search } = req.query;
 
-    const filter = {};
+    const filter = { businessId: req.businessId };
     if (type && ['income', 'expense'].includes(type.toLowerCase())) {
       filter.type = type.toLowerCase();
     }
@@ -69,7 +68,7 @@ const getTransactions = async (req, res, next) => {
   }
 };
 
-// POST /api/transactions
+// POST /api/transactions - Create transaction for current business workspace
 const createTransaction = async (req, res, next) => {
   try {
     const { type, category, description, amount, date } = req.body;
@@ -103,10 +102,8 @@ const createTransaction = async (req, res, next) => {
       });
     }
 
-    const business = await Business.findOne();
-
     const transaction = await Transaction.create({
-      businessId: business ? business._id : null,
+      businessId: req.businessId,
       type,
       category: category.trim(),
       description: description.trim(),
@@ -124,13 +121,17 @@ const createTransaction = async (req, res, next) => {
   }
 };
 
-// PUT /api/transactions/:id
+// PUT /api/transactions/:id - Update transaction belonging to current business workspace
 const updateTransaction = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { type, category, description, amount, date } = req.body;
 
-    const transaction = await Transaction.findById(id);
+    const transaction = await Transaction.findOne({
+      _id: id,
+      businessId: req.businessId,
+    });
+
     if (!transaction) {
       return res.status(404).json({
         success: false,
@@ -173,11 +174,14 @@ const updateTransaction = async (req, res, next) => {
   }
 };
 
-// DELETE /api/transactions/:id
+// DELETE /api/transactions/:id - Delete transaction belonging to current business workspace
 const deleteTransaction = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const transaction = await Transaction.findByIdAndDelete(id);
+    const transaction = await Transaction.findOneAndDelete({
+      _id: id,
+      businessId: req.businessId,
+    });
 
     if (!transaction) {
       return res.status(404).json({

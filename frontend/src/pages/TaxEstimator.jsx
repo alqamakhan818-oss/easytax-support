@@ -17,7 +17,7 @@ import { useBusiness } from '../context/BusinessContext';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
 export default function TaxEstimator() {
-  const { business, setIsSummaryModalOpen } = useBusiness();
+  const { business, setIsSummaryModalOpen, refreshTrigger } = useBusiness();
   const [loading, setLoading] = useState(true);
 
   // Financial inputs synced from transactions or custom-editable for testing
@@ -35,7 +35,7 @@ export default function TaxEstimator() {
 
   useEffect(() => {
     loadRecordedData();
-  }, []);
+  }, [refreshTrigger]);
 
   const loadRecordedData = async () => {
     try {

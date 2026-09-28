@@ -16,7 +16,7 @@ import { useBusiness } from '../context/BusinessContext';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
 export default function Documents() {
-  const { setIsSummaryModalOpen, triggerGlobalRefresh } = useBusiness();
+  const { setIsSummaryModalOpen, triggerGlobalRefresh, refreshTrigger } = useBusiness();
   const [categories, setCategories] = useState({});
   const [summary, setSummary] = useState({ total: 10, ready: 0, missing: 10, percentage: 0 });
   const [loading, setLoading] = useState(true);
@@ -34,7 +34,7 @@ export default function Documents() {
 
   useEffect(() => {
     loadDocuments();
-  }, []);
+  }, [refreshTrigger]);
 
   const loadDocuments = async () => {
     try {

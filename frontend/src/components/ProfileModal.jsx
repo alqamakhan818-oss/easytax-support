@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Building2, User, Phone, Mail, MapPin, Calendar, Briefcase, Check } from 'lucide-react';
+import { X, Building2, User, Phone, Mail, MapPin, Calendar, Briefcase, Check, Plus } from 'lucide-react';
 import { useBusiness } from '../context/BusinessContext';
 import { toInputDateFormat } from '../utils/formatters';
 
@@ -13,7 +13,7 @@ const BUSINESS_TYPES = [
 ];
 
 export default function ProfileModal() {
-  const { business, isProfileModalOpen, setIsProfileModalOpen, saveProfile } = useBusiness();
+  const { business, isProfileModalOpen, setIsProfileModalOpen, saveProfile, startNewBusiness } = useBusiness();
   const [formData, setFormData] = useState({
     name: '',
     ownerName: '',
@@ -62,6 +62,24 @@ export default function ProfileModal() {
       setErrorMsg(err.response?.data?.message || 'Failed to update business profile.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleStartNew = async () => {
+    if (window.confirm('Create a new business workspace? Your current business records will be safely preserved.')) {
+      try {
+        setSubmitting(true);
+        setErrorMsg('');
+        await startNewBusiness({
+          name: 'New Business',
+          ownerName: 'Business Owner',
+          businessType: 'Retail',
+        });
+      } catch (err) {
+        setErrorMsg('Failed to start new business.');
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -227,22 +245,35 @@ export default function ProfileModal() {
           </div>
 
           {/* Sticky Actions Footer */}
-          <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
+          <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
             <button
               type="button"
-              onClick={() => setIsProfileModalOpen(false)}
-              className="px-4 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-800 bg-white border border-slate-300 rounded-xl transition cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
+              onClick={handleStartNew}
               disabled={submitting}
-              className="flex items-center gap-1.5 px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition cursor-pointer disabled:opacity-50"
+              title="Create a fresh business workspace"
             >
-              <Check className="w-4 h-4" />
-              <span>{submitting ? 'Saving...' : 'Save Profile'}</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Start New Business</span>
             </button>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsProfileModalOpen(false)}
+                className="px-4 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-800 bg-white border border-slate-300 rounded-xl transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex items-center gap-1.5 px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
+              >
+                <Check className="w-4 h-4" />
+                <span>{submitting ? 'Saving...' : 'Save Profile'}</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>

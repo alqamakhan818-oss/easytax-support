@@ -1,15 +1,13 @@
 const DocumentStatus = require('../models/DocumentStatus');
-const Business = require('../models/Business');
 const { defaultDocuments } = require('../utils/seedData');
 
-// GET /api/documents
+// GET /api/documents - Get documents for current business workspace
 const getDocuments = async (req, res, next) => {
   try {
-    let docDoc = await DocumentStatus.findOne();
+    let docDoc = await DocumentStatus.findOne({ businessId: req.businessId });
     if (!docDoc) {
-      const business = await Business.findOne();
       docDoc = await DocumentStatus.create({
-        businessId: business ? business._id : null,
+        businessId: req.businessId,
         documents: defaultDocuments,
       });
     }
@@ -53,7 +51,7 @@ const getDocuments = async (req, res, next) => {
   }
 };
 
-// PUT /api/documents/:id (or PUT /api/documents to toggle / update by name or id)
+// PUT /api/documents - Update document status for current business workspace
 const updateDocumentStatus = async (req, res, next) => {
   try {
     const { documentId, status, notes } = req.body;
@@ -72,16 +70,20 @@ const updateDocumentStatus = async (req, res, next) => {
       });
     }
 
-    let docDoc = await DocumentStatus.findOne();
+    let docDoc = await DocumentStatus.findOne({ businessId: req.businessId });
     if (!docDoc) {
-      const business = await Business.findOne();
       docDoc = await DocumentStatus.create({
-        businessId: business ? business._id : null,
+        businessId: req.businessId,
         documents: defaultDocuments,
       });
     }
 
-    const docItem = docDoc.documents.id(documentId) || docDoc.documents.find((d) => d._id.toString() === documentId || d.name === documentId);
+    const docItem =
+      docDoc.documents.id(documentId) ||
+      docDoc.documents.find(
+        (d) => d._id.toString() === documentId || d.name === documentId
+      );
+
     if (!docItem) {
       return res.status(404).json({
         success: false,
@@ -117,7 +119,7 @@ const updateDocumentStatus = async (req, res, next) => {
   }
 };
 
-// POST /api/documents/add - Add custom document if needed
+// POST /api/documents - Add custom document for current business workspace
 const addCustomDocument = async (req, res, next) => {
   try {
     const { name, category, status, description } = req.body;
@@ -129,11 +131,10 @@ const addCustomDocument = async (req, res, next) => {
       });
     }
 
-    let docDoc = await DocumentStatus.findOne();
+    let docDoc = await DocumentStatus.findOne({ businessId: req.businessId });
     if (!docDoc) {
-      const business = await Business.findOne();
       docDoc = await DocumentStatus.create({
-        businessId: business ? business._id : null,
+        businessId: req.businessId,
         documents: defaultDocuments,
       });
     }

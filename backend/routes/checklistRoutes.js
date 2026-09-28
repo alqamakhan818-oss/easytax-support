@@ -4,6 +4,9 @@ const {
   getChecklist,
   updateChecklist,
 } = require('../controllers/checklistController');
+const { requireBusinessContext } = require('../middleware/businessContext');
+
+router.use(requireBusinessContext);
 
 router.route('/')
   .get(getChecklist)

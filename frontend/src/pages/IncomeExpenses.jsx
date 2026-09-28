@@ -29,7 +29,7 @@ import DisclaimerBanner from '../components/DisclaimerBanner';
 
 export default function IncomeExpenses() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { triggerGlobalRefresh } = useBusiness();
+  const { triggerGlobalRefresh, refreshTrigger } = useBusiness();
 
   const [transactions, setTransactions] = useState([]);
   const [totals, setTotals] = useState({ totalIncome: 0, totalExpenses: 0, net: 0 });
@@ -53,7 +53,7 @@ export default function IncomeExpenses() {
 
   useEffect(() => {
     loadTransactions();
-  }, [typeFilter, categoryFilter, sortBy, searchQuery]);
+  }, [typeFilter, categoryFilter, sortBy, searchQuery, refreshTrigger]);
 
   const loadCategories = async () => {
     try {

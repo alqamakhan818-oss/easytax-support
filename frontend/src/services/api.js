@@ -8,9 +8,30 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Business Profile
+// Centralized Request Interceptor: Automatically attaches X-Business-Id
+api.interceptors.request.use(
+  (config) => {
+    try {
+      const businessId = localStorage.getItem('easytax_business_id');
+      if (businessId) {
+        config.headers['X-Business-Id'] = businessId;
+      }
+    } catch (e) {
+      console.warn('Unable to access localStorage for business ID:', e);
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Business Profile & Workspace APIs
 export const getBusinessProfile = async () => {
   const res = await api.get('/business');
+  return res.data;
+};
+
+export const createBusinessProfile = async (profileData = {}) => {
+  const res = await api.post('/business', profileData);
   return res.data;
 };
 

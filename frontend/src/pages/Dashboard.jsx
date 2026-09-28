@@ -7,6 +7,7 @@ import {
   FolderCheck, 
   ListChecks, 
   PlusCircle, 
+  Plus,
   Building2, 
   ArrowRight, 
   Edit3, 
@@ -32,11 +33,28 @@ import TransactionModal from '../components/TransactionModal';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
 export default function Dashboard() {
-  const { business, setIsProfileModalOpen, setIsSummaryModalOpen, refreshTrigger, triggerGlobalRefresh } = useBusiness();
+  const {
+    business,
+    setIsProfileModalOpen,
+    setIsSummaryModalOpen,
+    refreshTrigger,
+    triggerGlobalRefresh,
+    startNewBusiness,
+  } = useBusiness();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
+
+  const handleStartNewBiz = async () => {
+    if (window.confirm('Create a new business workspace? Your current business records will be safely preserved.')) {
+      try {
+        await startNewBusiness({ name: 'New Business', ownerName: 'Business Owner', businessType: 'Retail' });
+      } catch (e) {
+        console.error('Failed to create new business:', e);
+      }
+    }
+  };
 
   useEffect(() => {
     loadDashboard();
@@ -113,13 +131,21 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 self-start md:self-auto">
+        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
           <button
             onClick={() => setIsProfileModalOpen(true)}
             className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer"
           >
             <Edit3 className="w-3.5 h-3.5" />
             <span>Edit Profile</span>
+          </button>
+          <button
+            onClick={handleStartNewBiz}
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition cursor-pointer"
+            title="Start a new business workspace"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Business</span>
           </button>
           <button
             onClick={() => setIsAddTxModalOpen(true)}

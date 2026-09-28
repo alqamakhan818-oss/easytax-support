@@ -14,7 +14,7 @@ import { useBusiness } from '../context/BusinessContext';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
 export default function FilingChecklist() {
-  const { setIsSummaryModalOpen, triggerGlobalRefresh } = useBusiness();
+  const { setIsSummaryModalOpen, triggerGlobalRefresh, refreshTrigger } = useBusiness();
   const [sections, setSections] = useState({});
   const [completedItems, setCompletedItems] = useState([]);
   const [progress, setProgress] = useState({ completed: 0, total: 17, percentage: 0 });
@@ -23,7 +23,7 @@ export default function FilingChecklist() {
 
   useEffect(() => {
     loadChecklist();
-  }, []);
+  }, [refreshTrigger]);
 
   const loadChecklist = async () => {
     try {

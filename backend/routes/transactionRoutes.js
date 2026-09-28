@@ -7,8 +7,13 @@ const {
   deleteTransaction,
   getCategories,
 } = require('../controllers/transactionController');
+const { requireBusinessContext } = require('../middleware/businessContext');
 
+// Static categories route
 router.get('/categories', getCategories);
+
+// Workspace-protected transaction routes
+router.use(requireBusinessContext);
 
 router.route('/')
   .get(getTransactions)

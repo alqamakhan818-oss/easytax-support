@@ -1,15 +1,13 @@
 const Checklist = require('../models/Checklist');
-const Business = require('../models/Business');
 const { defaultChecklistItems } = require('../utils/seedData');
 
-// GET /api/checklist
+// GET /api/checklist - Get checklist for current business workspace
 const getChecklist = async (req, res, next) => {
   try {
-    let checklist = await Checklist.findOne();
+    let checklist = await Checklist.findOne({ businessId: req.businessId });
     if (!checklist) {
-      const business = await Business.findOne();
       checklist = await Checklist.create({
-        businessId: business ? business._id : null,
+        businessId: req.businessId,
         completedItems: [],
       });
     }
@@ -53,7 +51,7 @@ const getChecklist = async (req, res, next) => {
   }
 };
 
-// PUT /api/checklist
+// PUT /api/checklist - Update checklist for current business workspace
 const updateChecklist = async (req, res, next) => {
   try {
     const { completedItems } = req.body;
@@ -69,11 +67,10 @@ const updateChecklist = async (req, res, next) => {
     const validIds = new Set(defaultChecklistItems.map((i) => i.id));
     const sanitizedList = [...new Set(completedItems.filter((id) => validIds.has(id)))];
 
-    let checklist = await Checklist.findOne();
+    let checklist = await Checklist.findOne({ businessId: req.businessId });
     if (!checklist) {
-      const business = await Business.findOne();
       checklist = new Checklist({
-        businessId: business ? business._id : null,
+        businessId: req.businessId,
         completedItems: sanitizedList,
       });
     } else {

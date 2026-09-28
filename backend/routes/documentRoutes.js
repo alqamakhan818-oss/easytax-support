@@ -5,6 +5,9 @@ const {
   updateDocumentStatus,
   addCustomDocument,
 } = require('../controllers/documentController');
+const { requireBusinessContext } = require('../middleware/businessContext');
+
+router.use(requireBusinessContext);
 
 router.route('/')
   .get(getDocuments)
