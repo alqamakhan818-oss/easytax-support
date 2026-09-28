@@ -1,0 +1,27 @@
+{
+  "name": "easytax-support",
+  "version": "1.0.0",
+  "description": "Digital Tax Filing Support for Small Businesses - Simplifying Tax Preparation for Small Businesses",
+  "scripts": {
+    "start": "node backend/server.js",
+    "server": "npm --prefix backend run dev",
+    "client": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "vercel-build": "cd frontend && npm install && npm run build"
+  },
+  "keywords": [
+    "mern",
+    "tax-preparation",
+    "small-business",
+    "tailwind-v4"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.12.1",
+    "morgan": "^1.10.0"
+  }
+}
