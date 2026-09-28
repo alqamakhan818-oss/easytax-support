@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const connectDB = require('./config/db');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 // Route imports
@@ -29,6 +31,24 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString(),
   });
+});
+
+// Database connection middleware for cloud / serverless requests
+app.use(async (req, res, next) => {
+  if (req.path === '/api/health' || !req.path.startsWith('/api')) {
+    return next();
+  }
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('Database connection error in request:', err.message);
+    return res.status(500).json({
+      success: false,
+      message: `Database connection failed: ${err.message}`,
+      hasUriConfigured: Boolean(process.env.MONGODB_URI),
+    });
+  }
 });
 
 // API Routes

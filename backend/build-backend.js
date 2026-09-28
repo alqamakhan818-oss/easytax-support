@@ -36,11 +36,7 @@ if (!fs.existsSync(indexPath)) {
 console.log('==> [Backend Build] Step 2: Creating server entrypoint in dist...');
 const entrypointContent = `const path = require('path');
 const express = require('express');
-const connectDB = require('../config/db');
 const app = require('../app');
-
-// Ensure MongoDB is connected
-connectDB().catch(err => console.error('MongoDB connection error:', err));
 
 // Serve static frontend assets from dist folder
 app.use(express.static(__dirname));

@@ -1,36 +1,53 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const { seedInitialData } = require('../utils/seedData');
 
-let isConnected = false;
+// Disable buffering so queries fail immediately with the real connection error instead of timing out after 10s
+mongoose.set('bufferCommands', false);
+
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null, seeded: false };
+}
 
 const connectDB = async () => {
-  // Reuse existing connection if already connected
-  if (mongoose.connection.readyState === 1) {
-    return mongoose.connection;
+  if (cached.conn && mongoose.connection.readyState === 1) {
+    return cached.conn;
   }
 
-  // Wait if connection is currently in progress
-  if (mongoose.connection.readyState === 2) {
-    await new Promise((resolve) => mongoose.connection.once('connected', resolve));
-    return mongoose.connection;
+  const connStr = process.env.MONGODB_URI || (process.env.VERCEL ? null : 'mongodb://127.0.0.1:27017/easytax_db');
+
+  if (!connStr) {
+    throw new Error('MONGODB_URI environment variable is missing in Vercel settings.');
+  }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 8000,
+      connectTimeoutMS: 8000,
+    };
+
+    cached.promise = mongoose.connect(connStr, opts).then(async (m) => {
+      console.log(`✅ MongoDB Connected successfully to host: ${m.connection.host}`);
+      if (!cached.seeded) {
+        try {
+          await seedInitialData();
+          cached.seeded = true;
+        } catch (e) {
+          console.warn('Seed warning:', e.message);
+        }
+      }
+      return m;
+    });
   }
 
   try {
-    const connStr = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/easytax_db';
-    const conn = await mongoose.connect(connStr, {
-      serverSelectionTimeoutMS: 5000,
-    });
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    
-    // Seed initial demo data if database is empty
-    await seedInitialData();
-    isConnected = true;
-    return conn;
+    cached.conn = await cached.promise;
+    return cached.conn;
   } catch (error) {
+    cached.promise = null;
     console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-      process.exit(1);
-    }
     throw error;
   }
 };
