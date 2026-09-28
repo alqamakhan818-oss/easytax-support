@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node -e \"require('fs').cpSync('dist', '../dist', {recursive: true, force: true})\"",
-    "vercel-build": "vite build && node -e \"require('fs').cpSync('dist', '../dist', {recursive: true, force: true})\"",
+    "build": "node build-dist.js",
+    "vercel-build": "node build-dist.js",
     "lint": "oxlint",
     "preview": "vite preview"
   },
