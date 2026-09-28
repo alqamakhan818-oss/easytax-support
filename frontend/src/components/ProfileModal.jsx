@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Building2, User, Phone, Mail, MapPin, Calendar, Briefcase, Check, Plus } from 'lucide-react';
+import { X, Building2, User, Phone, Mail, MapPin, Calendar, Briefcase, Check, Plus, Store } from 'lucide-react';
 import { useBusiness } from '../context/BusinessContext';
 import { toInputDateFormat } from '../utils/formatters';
 
@@ -13,7 +13,15 @@ const BUSINESS_TYPES = [
 ];
 
 export default function ProfileModal() {
-  const { business, isProfileModalOpen, setIsProfileModalOpen, saveProfile, startNewBusiness } = useBusiness();
+  const {
+    business,
+    allBusinesses,
+    switchBusiness,
+    isProfileModalOpen,
+    setIsProfileModalOpen,
+    saveProfile,
+    startNewBusiness,
+  } = useBusiness();
   const [formData, setFormData] = useState({
     name: '',
     ownerName: '',
@@ -108,6 +116,32 @@ export default function ProfileModal() {
         {/* Form Body (Scrollable) */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
           <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+            {/* Workspace Switcher (when multiple businesses exist) */}
+            {allBusinesses && allBusinesses.length > 1 && (
+              <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-emerald-950 flex items-center gap-1.5">
+                    <Store className="w-3.5 h-3.5 text-emerald-700" />
+                    Switch Saved Workspace:
+                  </span>
+                  <span className="text-[11px] text-emerald-700 font-medium">
+                    {allBusinesses.length} businesses saved
+                  </span>
+                </div>
+                <select
+                  value={business?._id || ''}
+                  onChange={(e) => switchBusiness(e.target.value)}
+                  className="w-full text-xs py-2 px-2.5 border border-emerald-300 rounded-lg bg-white font-medium text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-hidden cursor-pointer"
+                >
+                  {allBusinesses.map((b) => (
+                    <option key={b._id} value={b._id}>
+                      {b.name} ({b.ownerName || 'Owner'}){b.city ? ` — ${b.city}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {errorMsg && (
               <div className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-700 rounded-lg font-medium">
                 {errorMsg}

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
   getBusinessProfile,
+  getAllBusinesses,
   createBusinessProfile,
   updateBusinessProfile,
   resetDemoData,
@@ -12,10 +13,23 @@ const STORAGE_KEY = 'easytax_business_id';
 
 export const BusinessProvider = ({ children }) => {
   const [business, setBusiness] = useState(null);
+  const [allBusinesses, setAllBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Fetch list of all existing business workspaces
+  const fetchAllBusinesses = useCallback(async () => {
+    try {
+      const res = await getAllBusinesses();
+      if (res.success && Array.isArray(res.data)) {
+        setAllBusinesses(res.data);
+      }
+    } catch (err) {
+      console.warn('Failed to load workspaces list:', err);
+    }
+  }, []);
 
   // Initialize or load existing workspace
   const initWorkspace = useCallback(async () => {
@@ -53,12 +67,13 @@ export const BusinessProvider = ({ children }) => {
       }
 
       setBusiness(activeBiz);
+      await fetchAllBusinesses();
     } catch (err) {
       console.error('Failed to initialize business workspace:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchAllBusinesses]);
 
   // Fetch current business details
   const fetchBusiness = useCallback(async () => {
@@ -78,6 +93,10 @@ export const BusinessProvider = ({ children }) => {
     initWorkspace();
   }, [initWorkspace]);
 
+  useEffect(() => {
+    fetchAllBusinesses();
+  }, [refreshTrigger, fetchAllBusinesses]);
+
   // Save profile updates
   const saveProfile = async (formData) => {
     const res = await updateBusinessProfile(formData);
@@ -87,6 +106,23 @@ export const BusinessProvider = ({ children }) => {
       setRefreshTrigger((prev) => prev + 1);
     }
     return res;
+  };
+
+  // Switch to an existing business workspace
+  const switchBusiness = async (businessId) => {
+    try {
+      setLoading(true);
+      localStorage.setItem(STORAGE_KEY, businessId);
+      const res = await getBusinessProfile();
+      if (res.success && res.data) {
+        setBusiness(res.data);
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    } catch (err) {
+      console.error('Failed to switch business:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Start a new isolated business workspace
@@ -133,8 +169,11 @@ export const BusinessProvider = ({ children }) => {
     <BusinessContext.Provider
       value={{
         business,
+        allBusinesses,
         loading,
         fetchBusiness,
+        fetchAllBusinesses,
+        switchBusiness,
         saveProfile,
         startNewBusiness,
         handleResetDemo,

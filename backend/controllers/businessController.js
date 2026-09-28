@@ -143,8 +143,19 @@ const resetDemoData = async (req, res, next) => {
   }
 };
 
+// GET /api/business/all - List all business workspaces for quick switching
+const getAllBusinesses = async (req, res, next) => {
+  try {
+    const businesses = await Business.find({}, '_id name ownerName businessType city createdAt').sort({ createdAt: -1 });
+    return res.status(200).json({ success: true, data: businesses });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getBusiness,
+  getAllBusinesses,
   createBusiness,
   updateBusiness,
   resetDemoData,

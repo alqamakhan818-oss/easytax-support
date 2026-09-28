@@ -35,6 +35,8 @@ import DisclaimerBanner from '../components/DisclaimerBanner';
 export default function Dashboard() {
   const {
     business,
+    allBusinesses,
+    switchBusiness,
     setIsProfileModalOpen,
     setIsSummaryModalOpen,
     refreshTrigger,
@@ -132,6 +134,25 @@ export default function Dashboard() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
+          {/* Workspace Switcher visible directly on the Dashboard */}
+          {allBusinesses && allBusinesses.length > 1 && (
+            <div className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-300 rounded-xl px-2.5 py-1.5 transition">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Switch:</span>
+              <select
+                value={business?._id || ''}
+                onChange={(e) => switchBusiness(e.target.value)}
+                className="text-xs font-bold text-slate-800 bg-transparent outline-hidden cursor-pointer"
+                title="Switch between your saved businesses"
+              >
+                {allBusinesses.map((b) => (
+                  <option key={b._id} value={b._id}>
+                    {b.name} ({b.ownerName || 'Owner'})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <button
             onClick={() => setIsProfileModalOpen(true)}
             className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer"
@@ -145,7 +166,7 @@ export default function Dashboard() {
             title="Start a new business workspace"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>New Business</span>
+            <span>+ New Business</span>
           </button>
           <button
             onClick={() => setIsAddTxModalOpen(true)}

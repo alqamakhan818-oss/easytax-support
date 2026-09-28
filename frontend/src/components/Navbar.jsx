@@ -13,14 +13,22 @@ import {
   X, 
   FileCheck,
   Store,
-  ChevronDown
+  ChevronDown,
+  Check,
+  Plus
 } from 'lucide-react';
 import { useBusiness } from '../context/BusinessContext';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const { business, setIsProfileModalOpen, setIsSummaryModalOpen } = useBusiness();
+  const {
+    business,
+    allBusinesses,
+    switchBusiness,
+    setIsProfileModalOpen,
+    setIsSummaryModalOpen,
+  } = useBusiness();
   const location = useLocation();
   const moreRef = useRef(null);
 
@@ -168,17 +176,43 @@ export default function Navbar() {
 
           {/* Right Action Buttons — Always pinned, prioritized, never cut off */}
           <div className="hidden lg:flex items-center gap-2 shrink-0">
-            {/* Business Profile pill */}
-            <button
-              onClick={() => setIsProfileModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium transition cursor-pointer whitespace-nowrap shrink-0"
-              title="Click to view/edit business profile"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-              <span className="truncate max-w-[95px] xl:max-w-[125px] font-semibold text-slate-800">
-                {business?.name || 'My Business'}
-              </span>
-            </button>
+            {/* Business Profile pill & Switcher */}
+            {allBusinesses && allBusinesses.length > 1 ? (
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium transition cursor-pointer whitespace-nowrap shrink-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                <select
+                  value={business?._id || ''}
+                  onChange={(e) => switchBusiness(e.target.value)}
+                  className="bg-transparent text-xs font-semibold text-slate-800 outline-hidden cursor-pointer max-w-[110px] xl:max-w-[140px] truncate"
+                  title="Switch active business workspace"
+                >
+                  {allBusinesses.map((b) => (
+                    <option key={b._id} value={b._id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setIsProfileModalOpen(true)}
+                  className="text-[11px] text-emerald-700 hover:text-emerald-900 font-bold ml-1 pl-1.5 border-l border-slate-300 cursor-pointer"
+                  title="Edit profile details"
+                >
+                  Edit
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsProfileModalOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium transition cursor-pointer whitespace-nowrap shrink-0"
+                title="Click to view/edit business profile"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                <span className="truncate max-w-[95px] xl:max-w-[125px] font-semibold text-slate-800">
+                  {business?.name || 'My Business'}
+                </span>
+              </button>
+            )}
 
             {/* Preparation Summary button */}
             <button

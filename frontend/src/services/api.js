@@ -30,6 +30,11 @@ export const getBusinessProfile = async () => {
   return res.data;
 };
 
+export const getAllBusinesses = async () => {
+  const res = await api.get('/business/all');
+  return res.data;
+};
+
 export const createBusinessProfile = async (profileData = {}) => {
   const res = await api.post('/business', profileData);
   return res.data;
